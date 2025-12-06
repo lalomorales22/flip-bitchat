@@ -1,4 +1,5 @@
 #include "packet.h"
+#include "../flip_bitchat.h"
 #include <furi.h>
 #include <string.h>
 #include <stdlib.h>
