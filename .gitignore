@@ -1,0 +1,30 @@
+# Flipper Build Tool (ufbt) artifacts
+.ufbt/
+build/
+dist/
+*.fap
+*.elf
+*.bin
+
+# Compilation artifacts
+*.o
+*.d
+*.map
+
+# Debug files
+*.dSYM/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.log

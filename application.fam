@@ -1,0 +1,20 @@
+App(
+    appid="flip_bitchat",
+    name="BitChat",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="flip_bitchat_app",
+    stack_size=2 * 1024,
+    fap_category="Communication",
+    fap_version="0.1.0",
+    fap_icon="A_BitChat_14",
+    fap_description="Decentralized P2P mesh messaging over BLE using BitChat protocol",
+    fap_author="BitChat Team",
+    fap_weburl="https://github.com/lalomorales22/bitchat",
+    requires=[
+        "gui",
+        "storage",
+    ],
+    fap_libs=[
+        "mbedtls",
+    ],
+)
