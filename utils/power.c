@@ -224,7 +224,19 @@ void power_manager_update(PowerManager* pm) {
     
     if(new_mode != old_mode) {
         pm->mode = new_mode;
-        FURI_LOG_W(TAG, "Power mode auto-adjusted to %d due to battery level %d%%", new_mode, battery);
+        const char* mode_name = "Unknown";
+        switch(new_mode) {
+            case PowerModeNormal:
+                mode_name = "Normal";
+                break;
+            case PowerModeLowPower:
+                mode_name = "Low Power";
+                break;
+            case PowerModeUltraLow:
+                mode_name = "Ultra Low";
+                break;
+        }
+        FURI_LOG_W(TAG, "Power mode auto-adjusted to %s due to battery level %d%%", mode_name, battery);
     }
     
     furi_mutex_release(pm->mutex);

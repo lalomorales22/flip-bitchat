@@ -1,6 +1,7 @@
 #include "crypto.h"
 #include <furi.h>
 #include <furi_hal_random.h>
+#include <string.h>
 #include <mbedtls/chachapoly.h>
 #include <mbedtls/ecdh.h>
 #include <mbedtls/sha256.h>
