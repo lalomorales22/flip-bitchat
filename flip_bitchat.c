@@ -14,6 +14,8 @@
 #include "protocol/message_retry.h"
 #include "protocol/fragmenter.h"
 #include "storage/storage.h"
+#include "utils/memory.h"
+#include "utils/power.h"
 
 #define TAG "FlipBitChat"
 
@@ -31,6 +33,7 @@ typedef struct {
     BLEManager* ble_manager;
     MessageRetryService* retry_service;
     MessageFragmenter* fragmenter;
+    PowerManager* power_manager;
     
     // Crypto
     uint8_t static_private_key[32];
@@ -125,6 +128,9 @@ static FlipBitChatApp* flip_bitchat_app_alloc() {
     app->messages_sent = 0;
     app->messages_received = 0;
     
+    // Log initial memory usage
+    memory_log_usage(TAG);
+    
     FURI_LOG_I(TAG, "BitChat app allocated (user: %s)", app->username);
     
     return app;
@@ -132,6 +138,14 @@ static FlipBitChatApp* flip_bitchat_app_alloc() {
 
 static void flip_bitchat_app_free(FlipBitChatApp* app) {
     furi_assert(app);
+    
+    // Log final memory usage
+    memory_log_usage(TAG);
+    
+    // Free power manager
+    if(app->power_manager) {
+        power_manager_free(app->power_manager);
+    }
     
     // Free protocol components
     if(app->fragmenter) {
@@ -204,6 +218,14 @@ int32_t flip_bitchat_app(void* p) {
     // Initialize protocol services
     app->retry_service = message_retry_service_alloc();
     app->fragmenter = message_fragmenter_alloc();
+    app->power_manager = power_manager_create();
+    
+    // Set power mode based on battery
+    uint8_t battery = power_manager_get_battery_level();
+    FURI_LOG_I(TAG, "Battery level: %d%%", battery);
+    if(battery < 30) {
+        power_manager_set_mode(app->power_manager, PowerModeLowPower);
+    }
     
     // Set up view dispatcher
     view_dispatcher_enable_queue(app->view_dispatcher);
