@@ -113,9 +113,33 @@ BitchatPacket* packet_create_message(
     const uint8_t* recipient_id);
 
 /**
- * @brief Extract message from packet
+ * @brief Create a delivery acknowledgment packet
+ * @param ack_for_id Message ID being acknowledged
+ * @param sender_id Our peer ID
+ * @param recipient_id Recipient ID
+ * @return Allocated packet or NULL on error
+ */
+BitchatPacket* packet_create_delivery_ack(
+    const uint8_t* ack_for_id,
+    const uint8_t* sender_id,
+    const uint8_t* recipient_id);
+
+/**
+ * @brief Create a read receipt packet
+ * @param read_id Message ID being marked as read
+ * @param sender_id Our peer ID
+ * @param recipient_id Recipient ID
+ * @return Allocated packet or NULL on error
+ */
+BitchatPacket* packet_create_read_receipt(
+    const uint8_t* read_id,
+    const uint8_t* sender_id,
+    const uint8_t* recipient_id);
+
+/**
+ * @brief Extract acknowledgment ID from packet
  * @param packet Packet to extract from
- * @param message Output message structure
+ * @param ack_id Buffer for acknowledgment ID (8 bytes)
  * @return true if successful
  */
-bool packet_extract_message(const BitchatPacket* packet, BitchatMessage* message);
+bool packet_extract_ack_id(const BitchatPacket* packet, uint8_t* ack_id);

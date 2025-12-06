@@ -6,7 +6,7 @@
 
 // Key sizes
 #define CRYPTO_KEY_SIZE 32
-#define CRYPTO_NONCE_SIZE 24
+#define CRYPTO_NONCE_SIZE 12  // ChaCha20-Poly1305 uses 12-byte nonces
 #define CRYPTO_MAC_SIZE 16
 
 /**

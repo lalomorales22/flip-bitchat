@@ -1,4 +1,5 @@
 #include "packet.h"
+#include "../flip_bitchat.h"
 #include <furi.h>
 #include <string.h>
 #include <stdlib.h>
@@ -250,5 +251,59 @@ bool packet_extract_message(const BitchatPacket* packet, BitchatMessage* message
     message->is_private = (packet->header.flags & PACKET_FLAG_HAS_RECIPIENT) != 0;
     
     free(payload_str);
+    return true;
+}
+
+BitchatPacket* packet_create_delivery_ack(
+    const uint8_t* ack_for_id,
+    const uint8_t* sender_id,
+    const uint8_t* recipient_id) {
+    
+    furi_assert(ack_for_id);
+    furi_assert(sender_id);
+    
+    // Payload is just the message ID being acknowledged
+    return packet_create(
+        PacketTypeDeliveryAck,
+        BLE_MESH_TTL,
+        sender_id,
+        recipient_id,
+        ack_for_id,
+        8);
+}
+
+BitchatPacket* packet_create_read_receipt(
+    const uint8_t* read_id,
+    const uint8_t* sender_id,
+    const uint8_t* recipient_id) {
+    
+    furi_assert(read_id);
+    furi_assert(sender_id);
+    
+    // Payload is just the message ID being marked as read
+    return packet_create(
+        PacketTypeReadReceipt,
+        BLE_MESH_TTL,
+        sender_id,
+        recipient_id,
+        read_id,
+        8);
+}
+
+bool packet_extract_ack_id(const BitchatPacket* packet, uint8_t* ack_id) {
+    if(!packet || !ack_id) {
+        return false;
+    }
+    
+    if(packet->header.type != PacketTypeDeliveryAck &&
+       packet->header.type != PacketTypeReadReceipt) {
+        return false;
+    }
+    
+    if(!packet->payload || packet->header.payload_len < 8) {
+        return false;
+    }
+    
+    memcpy(ack_id, packet->payload, 8);
     return true;
 }

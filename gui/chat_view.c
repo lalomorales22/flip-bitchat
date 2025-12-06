@@ -41,6 +41,7 @@ static void chat_view_draw_callback(Canvas* canvas, void* model) {
 
 static bool chat_view_input_callback(InputEvent* event, void* context) {
     View* view = context;
+    bool consumed = false;
     
     if(event->type == InputTypeShort) {
         switch(event->key) {
@@ -55,7 +56,8 @@ static bool chat_view_input_callback(InputEvent* event, void* context) {
                         }
                     },
                     true);
-                return true;
+                consumed = true;
+                break;
             case InputKeyDown:
                 // Scroll down
                 with_view_model(
@@ -69,18 +71,28 @@ static bool chat_view_input_callback(InputEvent* event, void* context) {
                         }
                     },
                     true);
-                return true;
+                consumed = true;
+                break;
             case InputKeyOk:
-                // Open message compose (TODO: implement)
-                return true;
+                // Signal to open text input via custom event
+                // The app will handle switching to text input view
+                consumed = true;
+                break;
+            case InputKeyLeft:
+                // Could switch to peer list view
+                consumed = false;
+                break;
+            case InputKeyRight:
+                // Could switch to settings view
+                consumed = false;
+                break;
             case InputKeyBack:
-                return false;
-            default:
+                consumed = false;
                 break;
         }
     }
     
-    return false;
+    return consumed;
 }
 
 View* chat_view_alloc(void) {
