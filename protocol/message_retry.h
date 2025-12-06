@@ -64,6 +64,17 @@ void message_retry_service_ack(MessageRetryService* service, const uint8_t* mess
 void message_retry_service_process(MessageRetryService* service);
 
 /**
+ * @brief Set callback for sending messages
+ * @param service Service instance
+ * @param callback Send callback function
+ * @param context Context to pass to callback
+ */
+void message_retry_service_set_send_callback(
+    MessageRetryService* service,
+    bool (*callback)(const uint8_t* data, size_t len, void* context),
+    void* context);
+
+/**
  * @brief Get number of pending messages
  * @param service Service instance
  * @return Number of pending messages

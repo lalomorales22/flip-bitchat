@@ -126,6 +126,21 @@ void message_retry_service_ack(MessageRetryService* service, const uint8_t* mess
     furi_mutex_release(service->mutex);
 }
 
+void message_retry_service_set_send_callback(
+    MessageRetryService* service,
+    bool (*callback)(const uint8_t* data, size_t len, void* context),
+    void* context) {
+    
+    furi_assert(service);
+    
+    furi_mutex_acquire(service->mutex, FuriWaitForever);
+    
+    service->send_callback = callback;
+    service->send_context = context;
+    
+    furi_mutex_release(service->mutex);
+}
+
 void message_retry_service_process(MessageRetryService* service) {
     furi_assert(service);
     

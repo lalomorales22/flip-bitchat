@@ -4,6 +4,10 @@
 
 #define TAG "PowerManager"
 
+// Battery thresholds for auto power mode adjustment
+#define BATTERY_ULTRA_LOW_THRESHOLD 20
+#define BATTERY_LOW_POWER_THRESHOLD 50
+
 // Scan intervals (in ms) for different power modes
 #define SCAN_INTERVAL_NORMAL 1000
 #define SCAN_INTERVAL_LOW_POWER 5000
@@ -211,9 +215,9 @@ void power_manager_update(PowerManager* pm) {
     PowerMode new_mode = pm->mode;
     
     // Auto-adjust power mode based on battery
-    if(battery < 20) {
+    if(battery < BATTERY_ULTRA_LOW_THRESHOLD) {
         new_mode = PowerModeUltraLow;
-    } else if(battery < 50) {
+    } else if(battery < BATTERY_LOW_POWER_THRESHOLD) {
         new_mode = PowerModeLowPower;
     }
     // Note: Don't auto-upgrade to normal, let user decide

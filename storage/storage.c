@@ -67,11 +67,35 @@ size_t storage_load_messages(StoredMessage* messages, size_t max_messages) {
     size_t count = 0;
     
     if(storage_file_open(file, MESSAGES_FILE, FSAM_READ, FSOM_OPEN_EXISTING)) {
-        FuriString* line = furi_string_alloc();
+        char line_buffer[512];
         
-        while(count < max_messages && storage_file_read(file, line, 1024)) {
+        while(count < max_messages) {
+            // Read one character at a time to find line breaks
+            size_t pos = 0;
+            bool line_complete = false;
+            
+            while(pos < sizeof(line_buffer) - 1) {
+                uint8_t ch;
+                if(storage_file_read(file, &ch, 1) != 1) {
+                    break;  // EOF
+                }
+                
+                if(ch == '\n') {
+                    line_complete = true;
+                    break;
+                }
+                
+                line_buffer[pos++] = ch;
+            }
+            
+            if(pos == 0 && !line_complete) {
+                break;  // EOF with no data
+            }
+            
+            line_buffer[pos] = '\0';
+            
             // Parse line: timestamp|sender|content
-            const char* str = furi_string_get_cstr(line);
+            const char* str = line_buffer;
             
             // Find first separator
             const char* sep1 = strchr(str, '|');
@@ -92,21 +116,12 @@ size_t storage_load_messages(StoredMessage* messages, size_t max_messages) {
             memcpy(messages[count].sender, sep1 + 1, sender_len);
             messages[count].sender[sender_len] = '\0';
             
-            // Parse content (remove newline)
+            // Parse content
             strncpy(messages[count].content, sep2 + 1, sizeof(messages[count].content) - 1);
             messages[count].content[sizeof(messages[count].content) - 1] = '\0';
             
-            // Remove trailing newline
-            size_t len = strlen(messages[count].content);
-            if(len > 0 && messages[count].content[len - 1] == '\n') {
-                messages[count].content[len - 1] = '\0';
-            }
-            
             count++;
-            furi_string_reset(line);
         }
-        
-        furi_string_free(line);
     }
     
     storage_file_close(file);

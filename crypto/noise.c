@@ -2,32 +2,62 @@
 #include "crypto.h"
 #include <furi.h>
 #include <string.h>
+#include <mbedtls/hkdf.h>
+#include <mbedtls/md.h>
 
 #define TAG "Noise"
 
 // Protocol name for Noise_XX_25519_ChaChaPoly_SHA256
 static const char* PROTOCOL_NAME = "Noise_XX_25519_ChaChaPoly_SHA256";
 
-// HKDF helper function
-static void hkdf(
+// HKDF helper function using mbedtls
+static bool hkdf(
     const uint8_t* chaining_key,
     const uint8_t* input_key_material,
     size_t ikm_len,
     uint8_t* output1,
     uint8_t* output2) {
     
-    // Simplified HKDF: hash(chaining_key || input_key_material)
-    // In production, use proper HKDF from RFC 5869
-    uint8_t temp[64];
-    memcpy(temp, chaining_key, 32);
-    if(input_key_material && ikm_len > 0) {
-        memcpy(temp + 32, input_key_material, ikm_len < 32 ? ikm_len : 32);
+    // Use mbedtls HKDF with SHA-256
+    const mbedtls_md_info_t* md = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    
+    // First output key
+    int ret = mbedtls_hkdf(
+        md,
+        chaining_key,
+        32,
+        input_key_material ? input_key_material : (const uint8_t*)"",
+        input_key_material ? ikm_len : 0,
+        NULL,
+        0,
+        output1,
+        32);
+    
+    if(ret != 0) {
+        FURI_LOG_E(TAG, "HKDF failed for output1: -0x%04x", -ret);
+        return false;
     }
     
-    crypto_hash(temp, 64, output1);
+    // Second output key if requested
     if(output2) {
-        crypto_hash(output1, 32, output2);
+        ret = mbedtls_hkdf(
+            md,
+            output1,
+            32,
+            input_key_material ? input_key_material : (const uint8_t*)"",
+            input_key_material ? ikm_len : 0,
+            NULL,
+            0,
+            output2,
+            32);
+        
+        if(ret != 0) {
+            FURI_LOG_E(TAG, "HKDF failed for output2: -0x%04x", -ret);
+            return false;
+        }
     }
+    
+    return true;
 }
 
 bool noise_init(
